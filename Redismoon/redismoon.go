@@ -13,7 +13,7 @@ import (
 
 
 var actlastime int64 = 60 * 5
-var cachelastime time.Duration = 60 * 3
+var cachelastime time.Duration = 60 * 5
 var FeedLastTime time.Duration = 60 * 20
 
 

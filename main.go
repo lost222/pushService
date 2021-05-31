@@ -42,27 +42,42 @@ func singleCircle(){
 
 	var countSetTime int = 0
 	for _, rss := range rssUrls{
-		userWhoSub := model.SearchRecordUser(rss)
-		//拿到feed
 		feed, err := myrss.FetchURL(fp, rss)
-		//直接序列化解决深拷贝问题
 		if err != nil{
-			fmt.Println("in FetchURL", err)
+			fmt.Println(err)
+			continue
 		}
-
-		//推送到这些user的用户订阅流
-		for _, username := range userWhoSub{
-			countSetTime++
-			var uf Redismoon.UserFeed
-			uf.UserName = username
-			uf.Rssurl = rss
-			uf.Feed = *feed
-			err = uf.SaveRedis()
-			if err != nil{
-				fmt.Println("in SaveRedis", err)
-			}
+		cc := Redismoon.Cache{
+			Rssurl: rss,
+			Feed: *feed,
 		}
+		cc.SaveInRedis()
 	}
+
+	//todo 修改Feed表中LatesTitle项目
+
+	//for _, rss := range rssUrls{
+	//	userWhoSub := model.SearchRecordUser(rss)
+	//	//拿到feed
+	//	feed, err := myrss.FetchURL(fp, rss)
+	//	//直接序列化解决深拷贝问题
+	//	if err != nil{
+	//		fmt.Println("in FetchURL", err)
+	//	}
+	//
+	//	//推送到这些user的用户订阅流
+	//	for _, username := range userWhoSub{
+	//		countSetTime++
+	//		var uf Redismoon.UserFeed
+	//		uf.UserName = username
+	//		uf.Rssurl = rss
+	//		uf.Feed = *feed
+	//		err = uf.SaveRedis()
+	//		if err != nil{
+	//			fmt.Println("in SaveRedis", err)
+	//		}
+	//	}
+	//}
 
 	fmt.Println("countSetTime=", countSetTime)
 }
