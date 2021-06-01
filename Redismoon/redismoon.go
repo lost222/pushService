@@ -38,11 +38,12 @@ func Redisinit(){
 	// zadd key score member
 	// zadd activeusr timeUnix uid
 
-	timeUnix:=time.Now().Unix()
+	//timeUnix:=time.Now().Unix()
 	initusr := "test5"
-	res, err := rdb.Do(ctx, "zadd", "activeusr",timeUnix, initusr).Result()
-	//res, err = rdb.Do(ctx, "zadd", "activeusr",timeUnix, 645565).Result()
-	fmt.Println(res,err)
+	//res, err := rdb.Do(ctx, "zadd", "activeusr",timeUnix, initusr).Result()
+	////res, err = rdb.Do(ctx, "zadd", "activeusr",timeUnix, 645565).Result()
+	//fmt.Println(res,err)
+	SetActUser(initusr)
 
 	c := new(Cache)
 	c.Rssurl = "initurl"
@@ -207,7 +208,8 @@ func SetActUser(userName string) error {
 
 	timeUnix:=time.Now().Unix()
 
-	_, err := rdb.Do(ctx, "zadd", "activeusr",timeUnix, userName).Result()
+	_, err := rdb.ZAdd(ctx,"activeusr", &redis.Z{Score: float64(timeUnix), Member: userName}).Result()
+	//_, err := rdb.Do(ctx, "zadd", "activeusr",timeUnix, userName).Result()
 	//res, err = rdb.Do(ctx, "zadd", "activeusr",timeUnix, 645565).Result()
 	//fmt.Println(res,err)
 

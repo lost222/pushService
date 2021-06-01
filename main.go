@@ -2,11 +2,12 @@ package main
 
 import (
 	"./Redismoon"
+	"./consul"
 	"./model"
 	"./myrss"
 	"fmt"
 	"github.com/mmcdole/gofeed"
-	"time"
+	"net/http"
 )
 
 
@@ -25,6 +26,7 @@ func distinct(s []string) []string{
 
 
 func singleCircle(){
+	fmt.Println("in singleCircle")
 	activeUsers := Redismoon.Getactiveusr()
 	fmt.Println("activeUsers:" , activeUsers)
 
@@ -52,32 +54,11 @@ func singleCircle(){
 			Feed: *feed,
 		}
 		cc.SaveInRedis()
+		countSetTime++
 	}
 
 	//todo 修改Feed表中LatesTitle项目
 
-	//for _, rss := range rssUrls{
-	//	userWhoSub := model.SearchRecordUser(rss)
-	//	//拿到feed
-	//	feed, err := myrss.FetchURL(fp, rss)
-	//	//直接序列化解决深拷贝问题
-	//	if err != nil{
-	//		fmt.Println("in FetchURL", err)
-	//	}
-	//
-	//	//推送到这些user的用户订阅流
-	//	for _, username := range userWhoSub{
-	//		countSetTime++
-	//		var uf Redismoon.UserFeed
-	//		uf.UserName = username
-	//		uf.Rssurl = rss
-	//		uf.Feed = *feed
-	//		err = uf.SaveRedis()
-	//		if err != nil{
-	//			fmt.Println("in SaveRedis", err)
-	//		}
-	//	}
-	//}
 
 	fmt.Println("countSetTime=", countSetTime)
 }
@@ -85,20 +66,28 @@ func singleCircle(){
 //var circleTime int = 5 *60
 
 
+func Handler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello From PushService"))
+}
+
+
+func PushHandler(w http.ResponseWriter, r *http.Request) {
+	singleCircle()
+	w.Write([]byte("PUSH SUCCESS"))
+}
+
 func main() {
 	model.InitDB()
 	Redismoon.Redisinit()
+	consul.ConsulRegister()
 
+	http.HandleFunc("/", Handler)
+	http.HandleFunc("/push", PushHandler)
 
-	startTime := time.Now().UnixNano()
+	err := http.ListenAndServe("0.0.0.0:81", nil)
+	if err != nil {
+		fmt.Println("error: ", err.Error())
+	}
 
-	singleCircle()
-
-	endTime := time.Now().UnixNano()
-
-	seconds:= float64((endTime - startTime) / 1e9)
-
-
-	fmt.Println("pushService 1 circle run time", seconds, "s")
 
 }
