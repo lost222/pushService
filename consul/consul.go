@@ -8,7 +8,7 @@ import (
 const (
 	consulAddress = "127.0.0.1:8500"
 	localIp       = "127.0.0.1"
-	localPort     = 81
+	localPort     = 8082
 )
 
 const PushServiceID = "666543"

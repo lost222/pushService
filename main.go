@@ -72,7 +72,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 
 func PushHandler(w http.ResponseWriter, r *http.Request) {
-	singleCircle()
+	go singleCircle()
 	w.Write([]byte("PUSH SUCCESS"))
 }
 
@@ -84,10 +84,10 @@ func main() {
 	http.HandleFunc("/", Handler)
 	http.HandleFunc("/push", PushHandler)
 
-	err := http.ListenAndServe("0.0.0.0:81", nil)
+	err := http.ListenAndServe("0.0.0.0:8082", nil)
 	if err != nil {
 		fmt.Println("error: ", err.Error())
 	}
-
+	//singleCircle()
 
 }

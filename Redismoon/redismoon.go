@@ -118,11 +118,13 @@ type Cache struct {
 }
 
 func (c *Cache) SaveInRedis() (bool, error){
+	//json序列化
 	data, err := json.Marshal(c.Feed)
 	if err != nil {
 		return false, err
 	}
 
+	//连接redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -132,6 +134,7 @@ func (c *Cache) SaveInRedis() (bool, error){
 
 	var ctx = context.Background()
 
+	//设定cache失效时长
 	res, err := rdb.Set(ctx, c.Rssurl, data, cachelastime * time.Second).Result()
 	if err != nil {
 		return false, err
@@ -165,6 +168,7 @@ func (c *Cache) GetFromRedis() (bool, error){
 
 
 func Getactiveusr() []string{
+	//连接redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -180,6 +184,7 @@ func Getactiveusr() []string{
 	//ZRANGEBYSCORE activeusr timeUnix-actlastime +inf
 	mintime := timeUnix-actlastime
 
+	//获取过去actlastime时长内的活跃用户
 	res, err := rdb.ZRangeByScore(ctx, "activeusr", &redis.ZRangeBy{
 		Min:  strconv.FormatInt(mintime, 10),
 		Max: "+inf",
@@ -191,7 +196,6 @@ func Getactiveusr() []string{
 	//删除过期数值
 	//ZREMRANGEBYSCORE key min max
 	_, err = rdb.Do(ctx, "ZREMRANGEBYSCORE","activeusr","-inf",mintime).Result()
-
 
 	return res
 }
@@ -209,9 +213,7 @@ func SetActUser(userName string) error {
 	timeUnix:=time.Now().Unix()
 
 	_, err := rdb.ZAdd(ctx,"activeusr", &redis.Z{Score: float64(timeUnix), Member: userName}).Result()
-	//_, err := rdb.Do(ctx, "zadd", "activeusr",timeUnix, userName).Result()
-	//res, err = rdb.Do(ctx, "zadd", "activeusr",timeUnix, 645565).Result()
-	//fmt.Println(res,err)
+
 
 	return err
 }
